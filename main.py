@@ -2,13 +2,17 @@ import requests
 import csv
 import os
 import re
-import pdfkit
 from pyquery import PyQuery as pq
 from selenium import webdriver
+import img2pdf
 
 
 url = 'https://manhua.dmzj.com/lanqiufeirenquancai/'
 name = '灌篮高手'
+
+option = webdriver.ChromeOptions()
+option.add_argument('log-level=3')
+browser = webdriver.Chrome(options=option)
 
 
 def main():
@@ -34,15 +38,12 @@ def main():
         csv_writer.writerow((book_index, title, link))
         book_index += 1
 
+        download_item(link, title)
+
     book_csv.close()
-    download_item('https://manhua.dmzj.com/lanqiufeirenquancai/12515.shtml', '第1话')
 
 
 def download_item(item_url, item_name):
-    option = webdriver.ChromeOptions()
-    option.add_argument('log-level=3')
-
-    browser = webdriver.Chrome(options=option)
 
     browser.get(item_url)
 
@@ -54,19 +55,19 @@ def download_item(item_url, item_name):
     if not os.path.exists(file_dir):
         os.mkdir(file_dir)
 
+    img_arr = []
     for (index, item) in enumerate(arr_pages):
         img_url = 'https://images.dmzj.com/' + item
         img_save_file = file_dir + '/' + re.search(r'([^\/]*?)$', item).group(1)
+        img_arr.append(img_save_file)
 
         with open(img_save_file, 'wb')as p:
             p.write(requests.get(img_url).content)
 
-
-
+    pdf_file = './{0}/{1}.pdf'.format(name, item_name)
+    img2pdf.convert(img_arr, pdf_file, item_name)
 
 
 if __name__ == '__main__':
-    pdfkit.from_file('./灌篮高手/第1话/001.jpg', './灌篮高手/第1话/test.pdf')
-
-    # main()
-    # input()
+    main()
+    print('all finish')
