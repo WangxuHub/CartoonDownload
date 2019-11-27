@@ -44,7 +44,6 @@ def main():
 
 
 def download_item(item_url, item_name):
-
     browser.get(item_url)
 
     arr_pages = browser.execute_script("return arr_pages;")
@@ -62,7 +61,8 @@ def download_item(item_url, item_name):
         img_arr.append(img_save_file)
 
         with open(img_save_file, 'wb')as p:
-            p.write(requests.get(img_url).content)
+            # print(img_url)
+            p.write(requests.get(img_url, headers={"Referer": item_url}).content)
 
     pdf_file = './{0}/{1}.pdf'.format(name, item_name)
     img2pdf.convert(img_arr, pdf_file, item_name)
